@@ -27,6 +27,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -78,7 +79,9 @@ private val menuData = listOf(
     Menu(R.drawable.menu4, "Light Cappuccino", "Rp 20.000"),
 )
 
-@Preview(showBackground = true, heightDp = 280)
+@Preview(
+    showBackground = true, device = Devices.PIXEL_2,
+)
 @Composable
 fun DefaultPreview() {
     KedaiKopiTheme {
@@ -93,7 +96,7 @@ fun MyApp(name: String) {
         HomeSection(title = R.string.coffe_category) {
             FilterRow()
         }
-        HomeSection(title = R.string.coffe_category) {
+        HomeSection(title = R.string.favorite_menu) {
             MenuRow()
         }
     }

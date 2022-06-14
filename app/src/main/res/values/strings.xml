@@ -10,4 +10,5 @@
     <string name="category_macchiato">Macchiato</string>
     <string name="category_mocha">Mocha</string>
     <string name="coffe_category">Mau ngopi apa hari ini?</string>
+    <string name="favorite_menu">Menu Favorit</string>
 </resources>
