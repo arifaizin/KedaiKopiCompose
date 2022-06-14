@@ -1,6 +1,7 @@
 package com.dicoding.kedaikopi
 
 import android.os.Bundle
+import android.widget.GridView
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.annotation.DrawableRes
@@ -12,13 +13,11 @@ import androidx.compose.foundation.lazy.GridCells
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.LazyVerticalGrid
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.AbsoluteRoundedCornerShape
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -37,15 +36,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            KedaiKopiTheme {
-                // A surface container using the 'background' color from the theme
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colors.background
-                ) {
-                    MyApp("Android")
-                }
-            }
+            MyApp()
         }
     }
 }
@@ -85,22 +76,27 @@ private val menuData = listOf(
 @Composable
 fun DefaultPreview() {
     KedaiKopiTheme {
-        MyApp("Android")
+        MyApp()
     }
 }
 
 @Composable
-fun MyApp(name: String) {
-    Column {
-        Banner()
-        HomeSection(title = R.string.coffe_category) {
-            FilterRow()
-        }
-        HomeSection(title = R.string.favorite_menu) {
-            MenuRow()
+fun MyApp() {
+    KedaiKopiTheme {
+        Scaffold(
+            bottomBar = { BottomNavigation() }
+        ) {
+            Column {
+                Banner()
+                HomeSection(title = R.string.coffe_category) {
+                    FilterRow()
+                }
+                HomeSection(title = R.string.favorite_menu) {
+                    MenuGrid()
+                }
+            }
         }
     }
-
 }
 
 @Composable
@@ -199,7 +195,7 @@ fun FilterItem() {
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-fun MenuRow(
+fun MenuGrid(
     modifier: Modifier = Modifier
 ) {
     LazyVerticalGrid(
@@ -252,7 +248,7 @@ fun MenuItem(
 @Preview
 fun MenuItem() {
     MaterialTheme {
-        MenuItem(R.drawable.menu1, "R.string.category_cappuccino", "Rp 18.000")
+        MenuItem(R.drawable.menu1, "Pumpkin Spice Latte", "Rp 18.000")
     }
 }
 
@@ -272,5 +268,66 @@ fun HomeSection(
                 .padding(16.dp)
         )
         content()
+    }
+}
+
+@Composable
+private fun BottomNavigation(modifier: Modifier = Modifier) {
+    BottomNavigation(
+        backgroundColor = MaterialTheme.colors.background,
+        modifier = modifier
+    ) {
+        BottomNavigationItem(
+            icon = {
+                Icon(
+                    imageVector = Icons.Default.Home,
+                    contentDescription = null
+                )
+            },
+            label = {
+                Text(stringResource(R.string.menu_home))
+            },
+            selected = true,
+            onClick = {}
+        )
+        BottomNavigationItem(
+            icon = {
+                Icon(
+                    imageVector = Icons.Default.ShoppingCart,
+                    contentDescription = null
+                )
+            },
+            label = {
+                Text(stringResource(R.string.menu_cart))
+            },
+            selected = false,
+            onClick = {}
+        )
+        BottomNavigationItem(
+            icon = {
+                Icon(
+                    imageVector = Icons.Default.List,
+                    contentDescription = null
+                )
+            },
+            label = {
+                Text(stringResource(R.string.menu_history))
+            },
+            selected = false,
+            onClick = {}
+        )
+        BottomNavigationItem(
+            icon = {
+                Icon(
+                    imageVector = Icons.Default.AccountCircle,
+                    contentDescription = null
+                )
+            },
+            label = {
+                Text(stringResource(R.string.menu_profile))
+            },
+            selected = false,
+            onClick = {}
+        )
     }
 }
