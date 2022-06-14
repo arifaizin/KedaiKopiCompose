@@ -1,6 +1,7 @@
 package com.dicoding.kedaikopi
 
 import android.os.Bundle
+import android.view.MenuItem
 import android.widget.GridView
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -19,13 +20,17 @@ import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -85,8 +90,10 @@ fun MyApp() {
     KedaiKopiTheme {
         Scaffold(
             bottomBar = { BottomNavigation() }
-        ) {
-            Column {
+        ) { innerPadding ->
+            Column(
+                modifier = Modifier.padding(innerPadding)
+            ) {
                 Banner()
                 HomeSection(title = R.string.coffe_category) {
                     FilterRow()
@@ -121,9 +128,11 @@ fun Banner(
 fun SearchBar(
     modifier: Modifier = Modifier,
 ) {
+    val textState = remember { mutableStateOf(TextFieldValue()) }
+
     TextField(
-        value = "",
-        onValueChange = {},
+        value = textState.value,
+        onValueChange = { textState.value = it },
         leadingIcon = {
             Icon(
                 imageVector = Icons.Default.Search,
@@ -131,7 +140,10 @@ fun SearchBar(
             )
         },
         colors = TextFieldDefaults.textFieldColors(
-            backgroundColor = MaterialTheme.colors.surface
+            backgroundColor = MaterialTheme.colors.surface,
+            disabledIndicatorColor = Color.Transparent,
+            focusedIndicatorColor = Color.Transparent,
+            unfocusedIndicatorColor = Color.Transparent,
         ),
         placeholder = {
             Text(stringResource(R.string.placeholder_search))
@@ -139,7 +151,8 @@ fun SearchBar(
         modifier = Modifier
             .padding(16.dp)
             .fillMaxWidth()
-            .heightIn(min = 56.dp)
+            .heightIn(min = 48.dp)
+            .clip(AbsoluteRoundedCornerShape(16.dp))
     )
 }
 
@@ -173,7 +186,7 @@ fun FilterItem(
             contentDescription = null,
             contentScale = ContentScale.Crop,
             modifier = Modifier
-                .size(48.dp)
+                .size(60.dp)
                 .clip(CircleShape)
                 .align(Alignment.CenterHorizontally)
         )
