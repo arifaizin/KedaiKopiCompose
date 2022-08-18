@@ -1,8 +1,6 @@
 package com.dicoding.kedaikopi
 
 import android.os.Bundle
-import android.view.MenuItem
-import android.widget.GridView
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.annotation.DrawableRes
@@ -46,7 +44,12 @@ class MainActivity : ComponentActivity() {
     }
 }
 
-private val filterData = listOf(
+data class Category(
+    @DrawableRes val imageCategory: Int,
+    @StringRes val textCategory: Int
+)
+
+private val dummyCategory = listOf(
     R.drawable.icon_category_all to R.string.category_all,
     R.drawable.icon_category_americano to R.string.category_americano,
     R.drawable.icon_category_cappuccino to R.string.category_cappuccino,
@@ -55,29 +58,22 @@ private val filterData = listOf(
     R.drawable.icon_category_latte to R.string.category_latte,
     R.drawable.icon_category_macchiato to R.string.category_macchiato,
     R.drawable.icon_category_mocha to R.string.category_mocha,
-).map { DrawableStringPair(it.first, it.second) }
+).map { Category(it.first, it.second) }
 
-private data class DrawableStringPair(
-    @DrawableRes val drawable: Int,
-    @StringRes val text: Int
-)
-
-private data class Menu(
+data class Menu(
     val image: Int,
     val title: String,
     val price: String,
 )
 
-private val menuData = listOf(
+private val dummyMenu = listOf(
     Menu(R.drawable.menu1, "Pumpkin Spice Latte", "Rp 18.000"),
     Menu(R.drawable.menu2, "Choco Creamy Latte", "Rp 16.000"),
     Menu(R.drawable.menu3, "Tiramisu Coffee Milk", "Rp 28.000"),
     Menu(R.drawable.menu4, "Light Cappuccino", "Rp 20.000"),
 )
 
-@Preview(
-    showBackground = true, device = Devices.PIXEL_2,
-)
+@Preview(showBackground = true, device = Devices.PIXEL_2)
 @Composable
 fun DefaultPreview() {
     KedaiKopiTheme {
@@ -96,7 +92,7 @@ fun MyApp() {
             ) {
                 Banner()
                 HomeSection(title = R.string.coffe_category) {
-                    FilterRow()
+                    CategoryRow()
                 }
                 HomeSection(title = R.string.favorite_menu) {
                     MenuGrid()
@@ -148,7 +144,7 @@ fun SearchBar(
         placeholder = {
             Text(stringResource(R.string.placeholder_search))
         },
-        modifier = Modifier
+        modifier = modifier
             .padding(16.dp)
             .fillMaxWidth()
             .heightIn(min = 48.dp)
@@ -157,7 +153,7 @@ fun SearchBar(
 }
 
 @Composable
-fun FilterRow(
+fun CategoryRow(
     modifier: Modifier = Modifier
 ) {
     LazyRow(
@@ -165,16 +161,15 @@ fun FilterRow(
         contentPadding = PaddingValues(horizontal = 16.dp),
         modifier = modifier
     ) {
-        items(filterData) { item ->
-            FilterItem(item.drawable, item.text)
+        items(dummyCategory) { category ->
+            CategoryItem(category)
         }
     }
 }
 
 @Composable
-fun FilterItem(
-    drawable: Int,
-    text: Int,
+fun CategoryItem(
+    category: Category,
     modifier: Modifier = Modifier,
 
     ) {
@@ -182,7 +177,7 @@ fun FilterItem(
         modifier = modifier
     ) {
         Image(
-            painter = painterResource(drawable),
+            painter = painterResource(category.imageCategory),
             contentDescription = null,
             contentScale = ContentScale.Crop,
             modifier = Modifier
@@ -191,18 +186,19 @@ fun FilterItem(
                 .align(Alignment.CenterHorizontally)
         )
         Text(
-            modifier = Modifier.align(Alignment.CenterHorizontally),
-            text = stringResource(text),
-            fontSize = 10.sp
+            modifier = Modifier.paddingFromBaseline(top = 16.dp)
+                .align(Alignment.CenterHorizontally),
+            text = stringResource(category.textCategory),
+            fontSize = 8.sp
         )
     }
 }
 
 @Composable
 @Preview
-fun FilterItem() {
+fun CategoryItem() {
     MaterialTheme {
-        FilterItem(R.drawable.icon_category_cappuccino, R.string.category_cappuccino)
+        CategoryItem(Category(R.drawable.icon_category_cappuccino, R.string.category_cappuccino))
     }
 }
 
@@ -218,25 +214,22 @@ fun MenuGrid(
         verticalArrangement = Arrangement.spacedBy(16.dp),
         modifier = modifier
     ) {
-        items(menuData) { item ->
-            MenuItem(item.image, item.title, item.price)
+        items(dummyMenu) { item ->
+            MenuItem(item)
         }
     }
 }
 
 @Composable
 fun MenuItem(
-    image: Int,
-    title: String,
-    price: String,
+    menu: Menu,
     modifier: Modifier = Modifier,
-
-    ) {
+) {
     Column(
         modifier = modifier
     ) {
         Image(
-            painter = painterResource(image),
+            painter = painterResource(menu.image),
             contentDescription = null,
             contentScale = ContentScale.Crop,
             modifier = Modifier
@@ -245,13 +238,13 @@ fun MenuItem(
                 .clip(AbsoluteRoundedCornerShape(8.dp))
         )
         Text(
-            text = title,
+            text = menu.title,
             style = MaterialTheme.typography.subtitle1.copy(
                 fontWeight = FontWeight.ExtraBold
             )
         )
         Text(
-            text = price,
+            text = menu.price,
             style = MaterialTheme.typography.subtitle2
         )
     }
@@ -261,7 +254,7 @@ fun MenuItem(
 @Preview
 fun MenuItem() {
     MaterialTheme {
-        MenuItem(R.drawable.menu1, "Pumpkin Spice Latte", "Rp 18.000")
+        MenuItem(Menu(R.drawable.menu1, "Pumpkin Spice Latte", "Rp 18.000"))
     }
 }
 
