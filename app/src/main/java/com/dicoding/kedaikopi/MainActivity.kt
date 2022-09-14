@@ -1,6 +1,10 @@
 package com.dicoding.kedaikopi
 
+import FavoriteScreen
+import android.media.Image
 import android.os.Bundle
+import android.view.Menu
+import android.view.MenuItem
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.annotation.DrawableRes
@@ -33,13 +37,16 @@ import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.dicoding.kedaikopi.model.FakeCoffeeDataSource
+import com.dicoding.kedaikopi.ui.component.MenuItem
 import com.dicoding.kedaikopi.ui.theme.KedaiKopiTheme
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            MyApp()
+            FavoriteScreen(navigateToHomeScreen = {})
+//            MyApp()
         }
     }
 }
@@ -59,19 +66,6 @@ private val dummyCategory = listOf(
     R.drawable.icon_category_macchiato to R.string.category_macchiato,
     R.drawable.icon_category_mocha to R.string.category_mocha,
 ).map { Category(it.first, it.second) }
-
-data class Menu(
-    val image: Int,
-    val title: String,
-    val price: String,
-)
-
-private val dummyMenu = listOf(
-    Menu(R.drawable.menu1, "Pumpkin Spice Latte", "Rp 18.000"),
-    Menu(R.drawable.menu2, "Choco Creamy Latte", "Rp 16.000"),
-    Menu(R.drawable.menu3, "Tiramisu Coffee Milk", "Rp 28.000"),
-    Menu(R.drawable.menu4, "Light Cappuccino", "Rp 20.000"),
-)
 
 @Preview(showBackground = true, device = Devices.PIXEL_2)
 @Composable
@@ -214,47 +208,14 @@ fun MenuGrid(
         verticalArrangement = Arrangement.spacedBy(16.dp),
         modifier = modifier
     ) {
-        items(dummyMenu) { item ->
-            MenuItem(item)
-        }
-    }
-}
-
-@Composable
-fun MenuItem(
-    menu: Menu,
-    modifier: Modifier = Modifier,
-) {
-    Column(
-        modifier = modifier
-    ) {
-        Image(
-            painter = painterResource(menu.image),
-            contentDescription = null,
-            contentScale = ContentScale.Crop,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(167.dp)
-                .clip(AbsoluteRoundedCornerShape(8.dp))
-        )
-        Text(
-            text = menu.title,
-            style = MaterialTheme.typography.subtitle1.copy(
-                fontWeight = FontWeight.ExtraBold
+        items(FakeCoffeeDataSource.dummyCoffees) { menu ->
+            MenuItem(
+                image = menu.image,
+                title = menu.title,
+                price = menu.price,
+                modifier = Modifier.fillMaxWidth()
             )
-        )
-        Text(
-            text = menu.price,
-            style = MaterialTheme.typography.subtitle2
-        )
-    }
-}
-
-@Composable
-@Preview
-fun MenuItem() {
-    MaterialTheme {
-        MenuItem(Menu(R.drawable.menu1, "Pumpkin Spice Latte", "Rp 18.000"))
+        }
     }
 }
 

@@ -15,4 +15,5 @@
     <string name="menu_profile">Profile</string>
     <string name="menu_cart">Keranjang</string>
     <string name="menu_history">Riwayat</string>
+    <string name="title_activity_detail">DetailActivity</string>
 </resources>
