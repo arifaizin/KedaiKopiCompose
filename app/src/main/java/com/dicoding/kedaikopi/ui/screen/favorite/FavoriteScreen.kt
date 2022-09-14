@@ -1,18 +1,17 @@
-import androidx.compose.animation.*
+
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.lazy.*
-import androidx.compose.runtime.*
+import androidx.compose.foundation.lazy.GridCells
+import androidx.compose.foundation.lazy.LazyVerticalGrid
+import androidx.compose.foundation.lazy.items
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.dicoding.kedaikopi.data.CoffeeRepository
-import com.dicoding.kedaikopi.model.FakeCoffeeDataSource
-import com.dicoding.kedaikopi.model.FakeCoffeeDataSource.dummyCoffees
 import com.dicoding.kedaikopi.model.OrderCoffee
 import com.dicoding.kedaikopi.ui.ViewModelFactory
 import com.dicoding.kedaikopi.ui.common.UiState
@@ -21,6 +20,7 @@ import com.dicoding.kedaikopi.ui.screen.favorite.FavoriteViewModel
 
 @Composable
 fun FavoriteScreen(
+    navigateToDetail: (Long) -> Unit,
     viewModel: FavoriteViewModel = viewModel(factory = ViewModelFactory(CoffeeRepository()))
 ) {
     viewModel.uiState.collectAsState(initial = UiState.Loading).value.let { uiState ->
@@ -31,7 +31,7 @@ fun FavoriteScreen(
             is UiState.Success -> {
                 FavoriteContent(
                     listCoffee = uiState.data,
-                    onDetailClick = {}
+                    navigateToDetail = navigateToDetail
                 )
             }
             is UiState.Error -> {}
@@ -43,7 +43,7 @@ fun FavoriteScreen(
 @Composable
 fun FavoriteContent(
     listCoffee: List<OrderCoffee>,
-    onDetailClick: (Long) -> Unit,
+    navigateToDetail: (Long) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     LazyVerticalGrid(
@@ -59,7 +59,7 @@ fun FavoriteContent(
                 title = menu.coffee.title,
                 price = menu.coffee.price,
                 modifier = Modifier.clickable {
-                    onDetailClick(menu.coffee.id)
+                    navigateToDetail(menu.coffee.id)
                 }
             )
         }

@@ -9,10 +9,6 @@ import kotlinx.coroutines.flow.map
 
 class CoffeeRepository() {
 
-    fun getHeroes(): List<Coffee> {
-        return FakeCoffeeDataSource.dummyCoffees
-    }
-
     private val orderCoffeeDrinks = mutableListOf<OrderCoffee>()
 
     suspend fun getAllOrderCoffeeDrinks(): Flow<List<OrderCoffee>> {
@@ -22,6 +18,12 @@ class CoffeeRepository() {
             }
         }
         return flowOf(orderCoffeeDrinks)
+    }
+
+    suspend fun getCoffeeById(coffeeDrinkId: Long): Coffee {
+        return FakeCoffeeDataSource.dummyCoffees.first {
+            it.id == coffeeDrinkId
+        }
     }
 
     suspend fun getAddedOrderCoffeeDrinks(): Flow<List<OrderCoffee>> {

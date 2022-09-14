@@ -1,15 +1,9 @@
-package com.dicoding.kedaikopi.ui.detail
+package com.dicoding.kedaikopi.ui.screen.detail
 
-import android.os.Bundle
-import android.view.Menu
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
 import androidx.annotation.DrawableRes
-import androidx.annotation.Size
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.GridCells
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.LazyVerticalGrid
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.selection.selectable
@@ -18,8 +12,6 @@ import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowDropDown
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
@@ -30,44 +22,43 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.dicoding.kedaikopi.R
-import com.dicoding.kedaikopi.model.Coffee
-import com.dicoding.kedaikopi.model.FakeCoffeeDataSource
+import com.dicoding.kedaikopi.data.CoffeeRepository
+import com.dicoding.kedaikopi.ui.ViewModelFactory
+import com.dicoding.kedaikopi.ui.common.UiState
 import com.dicoding.kedaikopi.ui.theme.CoffeeBrown
 import com.dicoding.kedaikopi.ui.theme.KedaiKopiTheme
 import com.dicoding.kedaikopi.ui.theme.LightGray
 import java.text.NumberFormat
 import java.util.*
 
-class DetailActivity : ComponentActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContent {
-            KedaiKopiTheme {
-                // A surface container using the 'background' color from the theme
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colors.background
-                ) {
-                    DetailScreen(FakeCoffeeDataSource.dummyCoffees[0])
-                }
-            }
-        }
-    }
-}
-
 @Composable
-fun DetailScreen(menu: Coffee) {
-    Scaffold(
-        topBar = {
-        },
-    ) {
-        DetailContent(
-            menu.image,
-            menu.title,
-            menu.price,
-            onBackClick = {}
+fun DetailScreen(
+    coffeeId: Long,
+    viewModel: DetailFavoriteViewModel = viewModel(
+        factory = ViewModelFactory(
+            CoffeeRepository()
         )
+    ),
+    onBackClick: () -> Unit
+) {
+    viewModel.uiState.collectAsState(initial = UiState.Loading).value.let { uiState ->
+        when (uiState) {
+            is UiState.Loading -> {
+                viewModel.getCoffeeById(coffeeId)
+            }
+            is UiState.Success -> {
+                val menu = uiState.data
+                DetailContent(
+                    menu.image,
+                    menu.title,
+                    menu.price,
+                    onBackClick = onBackClick
+                )
+            }
+            is UiState.Error -> {}
+        }
     }
 }
 
@@ -86,7 +77,7 @@ fun DetailContent(
     var toppingPrice by rememberSaveable() { mutableStateOf(0) }
 
     Column {
-        DetailMenu(modifier, image, title, basePrice)
+        DetailMenu(modifier, image, title, basePrice, onBackClick = onBackClick)
         Spacer(modifier = Modifier.fillMaxWidth().height(6.dp).background(LightGray))
         val iceOptions = listOf("Normal", "Less", "No Ice")
         var selectedItem by remember { mutableStateOf(iceOptions[0]) }
@@ -140,7 +131,8 @@ private fun DetailMenu(
     modifier: Modifier,
     @DrawableRes image: Int,
     title: String,
-    basePrice: Int
+    basePrice: Int,
+    onBackClick: () -> Unit,
 ) {
     Box {
         Image(
@@ -154,7 +146,7 @@ private fun DetailMenu(
         Icon(
             imageVector = Icons.Default.ArrowBack,
             contentDescription = "Back",
-            modifier = Modifier.padding(16.dp)
+            modifier = Modifier.padding(16.dp).clickable { onBackClick() }
         )
     }
     Column(modifier = Modifier.padding(16.dp)) {
@@ -288,6 +280,6 @@ fun ToppingPreview() {
 @Composable
 fun DefaultPreview2() {
     KedaiKopiTheme {
-        DetailScreen(FakeCoffeeDataSource.dummyCoffees[0])
+        DetailContent(R.drawable.menu1, "title", 30000, onBackClick = {})
     }
 }

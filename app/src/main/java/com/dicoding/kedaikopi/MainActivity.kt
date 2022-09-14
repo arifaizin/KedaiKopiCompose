@@ -23,10 +23,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
+import com.dicoding.kedaikopi.ui.screen.detail.DetailScreen
 import com.dicoding.kedaikopi.ui.screen.home.HomeScreen
 import com.dicoding.kedaikopi.ui.theme.KedaiKopiTheme
 import com.dicoding.kedaikopi.ui.theme.LightGray
@@ -42,10 +45,11 @@ class MainActivity : ComponentActivity() {
 
 sealed class Screen(val route: String) {
     object Home : Screen("home")
-    object Favorite : Screen("favorite/{coffeeId}")
+    object Favorite : Screen("favorite")
     object DetailFavorite : Screen("favorite/{coffeeId}") {
-        fun createRoute(coffeeId: String) = "favorite/$coffeeId"
+        fun createRoute(coffeeId: Long) = "favorite/$coffeeId"
     }
+
     object Profile : Screen("profile")
 }
 
@@ -75,7 +79,20 @@ fun MyApp() {
                     HomeScreen()
                 }
                 composable(Screen.Favorite.route) {
-                    FavoriteScreen()
+                    FavoriteScreen(
+                        navigateToDetail = {
+                            navController.navigate(Screen.DetailFavorite.createRoute(it))
+                        }
+                    )
+                }
+                composable(
+                    route = Screen.DetailFavorite.route,
+                    arguments = listOf(navArgument("coffeeId") { type = NavType.LongType }),
+                ) {
+                    val id = it.arguments?.getLong("coffeeId") ?: -1L
+                    DetailScreen(id){
+                        navController.navigateUp()
+                    }
                 }
                 composable(Screen.Profile.route) {
                     ProfileScreen()
@@ -89,7 +106,7 @@ fun MyApp() {
 @Composable
 fun ProfileScreen(
     modifier: Modifier = Modifier
-){
+) {
     Box(
         modifier = modifier.fillMaxSize(),
         contentAlignment = Alignment.Center,

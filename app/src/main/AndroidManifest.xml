@@ -14,12 +14,6 @@
         android:theme="@style/Theme.KedaiKopi"
         tools:targetApi="31" >
         <activity
-            android:name=".ui.detail.DetailActivity"
-            android:exported="true"
-            android:label="@string/title_activity_detail"
-            android:theme="@style/Theme.KedaiKopi" >
-        </activity>
-        <activity
             android:name=".MainActivity"
             android:exported="true"
             android:label="@string/app_name"
