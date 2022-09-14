@@ -1,5 +1,6 @@
 import androidx.compose.animation.*
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
@@ -20,7 +21,6 @@ import com.dicoding.kedaikopi.ui.screen.favorite.FavoriteViewModel
 
 @Composable
 fun FavoriteScreen(
-    navigateToHomeScreen: () -> Unit,
     viewModel: FavoriteViewModel = viewModel(factory = ViewModelFactory(CoffeeRepository()))
 ) {
     viewModel.uiState.collectAsState(initial = UiState.Loading).value.let { uiState ->
@@ -31,6 +31,7 @@ fun FavoriteScreen(
             is UiState.Success -> {
                 FavoriteContent(
                     listCoffee = uiState.data,
+                    onDetailClick = {}
                 )
             }
             is UiState.Error -> {}
@@ -42,6 +43,7 @@ fun FavoriteScreen(
 @Composable
 fun FavoriteContent(
     listCoffee: List<OrderCoffee>,
+    onDetailClick: (Long) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     LazyVerticalGrid(
@@ -56,6 +58,9 @@ fun FavoriteContent(
                 image = menu.coffee.image,
                 title = menu.coffee.title,
                 price = menu.coffee.price,
+                modifier = Modifier.clickable {
+                    onDetailClick(menu.coffee.id)
+                }
             )
         }
     }

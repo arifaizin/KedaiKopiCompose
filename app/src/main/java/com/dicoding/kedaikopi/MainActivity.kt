@@ -1,10 +1,7 @@
 package com.dicoding.kedaikopi
 
 import FavoriteScreen
-import android.media.Image
 import android.os.Bundle
-import android.view.Menu
-import android.view.MenuItem
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.annotation.DrawableRes
@@ -22,12 +19,14 @@ import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -37,18 +36,42 @@ import androidx.compose.ui.tooling.preview.Devices
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavDestination.Companion.hierarchy
+import androidx.navigation.NavGraph.Companion.findStartDestination
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.compose.rememberNavController
 import com.dicoding.kedaikopi.model.FakeCoffeeDataSource
 import com.dicoding.kedaikopi.ui.component.MenuItem
 import com.dicoding.kedaikopi.ui.theme.KedaiKopiTheme
+import com.dicoding.kedaikopi.ui.theme.LightGray
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            FavoriteScreen(navigateToHomeScreen = {})
-//            MyApp()
+//            FavoriteScreen(onDetailClick = {})
+            MyApp()
         }
     }
+}
+
+sealed class Screen(val route: String) {
+    object Home : Screen("home")
+    object Favorite : Screen("favorite/{coffeeId}")
+    object DetailFavorite : Screen("favorite/{coffeeId}") {
+        fun createRoute(coffeeId: String) = "favorite/$coffeeId"
+    }
+
+    object Profile : Screen("profile")
+}
+
+@Composable
+fun MainApp() {
+
+
 }
 
 data class Category(
@@ -77,22 +100,59 @@ fun DefaultPreview() {
 
 @Composable
 fun MyApp() {
+
+    val navController = rememberNavController()
+
     KedaiKopiTheme {
         Scaffold(
-            bottomBar = { BottomNavigation() }
+            bottomBar = { BottomNavigation(navController) }
         ) { innerPadding ->
-            Column(
+            NavHost(
+                navController = navController,
+                startDestination = Screen.Home.route,
                 modifier = Modifier.padding(innerPadding)
             ) {
-                Banner()
-                HomeSection(title = R.string.coffe_category) {
-                    CategoryRow()
+                composable(Screen.Home.route) {
+                    HomeScreen()
                 }
-                HomeSection(title = R.string.favorite_menu) {
-                    MenuGrid()
+                composable(Screen.Favorite.route) {
+                    FavoriteScreen()
+                }
+                composable(Screen.Profile.route) {
+                    ProfileScreen()
                 }
             }
+
         }
+    }
+}
+
+@Composable
+fun HomeScreen(
+    modifier: Modifier = Modifier
+){
+    Column(
+        modifier = modifier
+    ) {
+        Banner()
+        HomeSection(title = R.string.coffe_category) {
+            CategoryRow()
+        }
+        HomeSection(title = R.string.favorite_menu) {
+            MenuGrid()
+        }
+    }
+}
+
+@Composable
+fun ProfileScreen(
+    modifier: Modifier = Modifier
+){
+    Box(
+        modifier = modifier.fillMaxSize(),
+        contentAlignment = Alignment.Center,
+    ) {
+        Text("Profile Screen")
     }
 }
 
@@ -165,7 +225,6 @@ fun CategoryRow(
 fun CategoryItem(
     category: Category,
     modifier: Modifier = Modifier,
-
     ) {
     Column(
         modifier = modifier
@@ -238,63 +297,65 @@ fun HomeSection(
     }
 }
 
+data class BottomBarItem(val title: String, val icon: ImageVector, val screen: Screen)
+
 @Composable
-private fun BottomNavigation(modifier: Modifier = Modifier) {
+private fun BottomNavigation(
+    navController: NavHostController,
+    modifier: Modifier = Modifier
+) {
     BottomNavigation(
         backgroundColor = MaterialTheme.colors.background,
         modifier = modifier
     ) {
-        BottomNavigationItem(
-            icon = {
-                Icon(
-                    imageVector = Icons.Default.Home,
-                    contentDescription = null
-                )
-            },
-            label = {
-                Text(stringResource(R.string.menu_home))
-            },
-            selected = true,
-            onClick = {}
+        val items = listOf(
+            BottomBarItem(
+                title = stringResource(R.string.menu_home),
+                icon = Icons.Default.Home,
+                screen = Screen.Home
+            ),
+            BottomBarItem(
+                title = stringResource(R.string.menu_cart),
+                icon = Icons.Default.Favorite,
+                screen = Screen.Favorite
+            ),
+            BottomBarItem(
+                title = stringResource(R.string.menu_profile),
+                icon = Icons.Default.AccountCircle,
+                screen = Screen.Profile
+            ),
         )
-        BottomNavigationItem(
-            icon = {
-                Icon(
-                    imageVector = Icons.Default.ShoppingCart,
-                    contentDescription = null
+        val navBackStackEntry by navController.currentBackStackEntryAsState()
+        val currentDestination = navBackStackEntry?.destination
+        BottomNavigation(
+            backgroundColor = MaterialTheme.colors.background,
+            contentColor = MaterialTheme.colors.primary,
+            modifier = modifier
+        ) {
+            items.map { item ->
+                BottomNavigationItem(
+                    icon = {
+                        Icon(
+                            imageVector = item.icon,
+                            contentDescription = item.title
+                        )
+                    },
+                    label = {
+                        Text(item.title)
+                    },
+                    selected = currentDestination?.hierarchy?.any { it.route == item.screen.route } == true,
+                    unselectedContentColor = LightGray,
+                    onClick = {
+                        navController.navigate(item.screen.route) {
+                            popUpTo(navController.graph.findStartDestination().id) {
+                                saveState = true
+                            }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
+                    }
                 )
-            },
-            label = {
-                Text(stringResource(R.string.menu_cart))
-            },
-            selected = false,
-            onClick = {}
-        )
-        BottomNavigationItem(
-            icon = {
-                Icon(
-                    imageVector = Icons.Default.List,
-                    contentDescription = null
-                )
-            },
-            label = {
-                Text(stringResource(R.string.menu_history))
-            },
-            selected = false,
-            onClick = {}
-        )
-        BottomNavigationItem(
-            icon = {
-                Icon(
-                    imageVector = Icons.Default.AccountCircle,
-                    contentDescription = null
-                )
-            },
-            label = {
-                Text(stringResource(R.string.menu_profile))
-            },
-            selected = false,
-            onClick = {}
-        )
+            }
+        }
     }
 }
