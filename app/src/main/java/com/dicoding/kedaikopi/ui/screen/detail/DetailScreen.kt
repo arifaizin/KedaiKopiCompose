@@ -3,9 +3,6 @@ package com.dicoding.kedaikopi.ui.screen.detail
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.GridCells
-import androidx.compose.foundation.lazy.LazyVerticalGrid
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
@@ -24,9 +21,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.dicoding.kedaikopi.R
-import com.dicoding.kedaikopi.data.CoffeeRepository
+import com.dicoding.kedaikopi.di.Injection
 import com.dicoding.kedaikopi.ui.ViewModelFactory
 import com.dicoding.kedaikopi.ui.common.UiState
+import com.dicoding.kedaikopi.ui.component.ProductCounter
 import com.dicoding.kedaikopi.ui.theme.CoffeeBrown
 import com.dicoding.kedaikopi.ui.theme.KedaiKopiTheme
 import com.dicoding.kedaikopi.ui.theme.LightGray
@@ -38,10 +36,11 @@ fun DetailScreen(
     coffeeId: Long,
     viewModel: DetailFavoriteViewModel = viewModel(
         factory = ViewModelFactory(
-            CoffeeRepository()
+            Injection.provideRepository()
         )
     ),
-    onBackClick: () -> Unit
+    onBackClick: () -> Unit,
+    navigateToCart: () -> Unit
 ) {
     viewModel.uiState.collectAsState(initial = UiState.Loading).value.let { uiState ->
         when (uiState) {
@@ -54,7 +53,11 @@ fun DetailScreen(
                     menu.image,
                     menu.title,
                     menu.price,
-                    onBackClick = onBackClick
+                    onBackClick = onBackClick,
+                    onAddToCart = {
+                        viewModel.addToCart(menu, it)
+                        navigateToCart()
+                    }
                 )
             }
             is UiState.Error -> {}
@@ -69,12 +72,14 @@ fun DetailContent(
     title: String,
     basePrice: Int,
     onBackClick: () -> Unit,
+    onAddToCart: (count: Int) -> Unit,
     modifier: Modifier = Modifier,
 ) {
 
-    var totalPrice by rememberSaveable() { mutableStateOf(0) }
-    var optionPrice by rememberSaveable() { mutableStateOf(0) }
-    var toppingPrice by rememberSaveable() { mutableStateOf(0) }
+    var totalPrice by rememberSaveable { mutableStateOf(0) }
+    var optionPrice by rememberSaveable { mutableStateOf(0) }
+    var toppingPrice by rememberSaveable { mutableStateOf(0) }
+    var orderCount by rememberSaveable { mutableStateOf(1) }
 
     Column {
         DetailMenu(modifier, image, title, basePrice, onBackClick = onBackClick)
@@ -82,7 +87,7 @@ fun DetailContent(
         val iceOptions = listOf("Normal", "Less", "No Ice")
         var selectedItem by remember { mutableStateOf(iceOptions[0]) }
 
-        Row(
+        Column(
             modifier = Modifier.padding(16.dp)
         ) {
             Text(
@@ -97,29 +102,38 @@ fun DetailContent(
                 },
             )
         }
-        Text(
-            text = "Topping",
-            fontWeight = FontWeight.ExtraBold,
-            modifier = Modifier.padding(16.dp)
+//        Text(
+//            text = "Topping",
+//            fontWeight = FontWeight.ExtraBold,
+//            modifier = Modifier.padding(16.dp)
+//        )
+//        LazyVerticalGrid(
+//            cells = GridCells.Adaptive(120.dp),
+//            horizontalArrangement = Arrangement.spacedBy(8.dp),
+//            verticalArrangement = Arrangement.spacedBy(8.dp),
+//            contentPadding = PaddingValues(8.dp)
+//        ) {
+//
+//            items(dummyTopping) { topping ->
+//                ToppingItem(topping.image, topping.title, topping.price,
+//                    onItemSelected = {
+//
+//                    })
+//            }
+//        }
+
+        ProductCounter(
+            1,
+            orderCount,
+            onProductIncreased = { orderCount++ },
+            onProductDecreased = { if (orderCount > 1) orderCount-- }
         )
-        LazyVerticalGrid(
-            cells = GridCells.Adaptive(120.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
-            contentPadding = PaddingValues(8.dp)
-        ) {
 
-            items(dummyTopping) { topping ->
-                ToppingItem(topping.image, topping.title, topping.price,
-                    onItemSelected = {
-
-                    })
-            }
-        }
-
-        val totalPrice = basePrice + optionPrice + toppingPrice
+        totalPrice = (basePrice + optionPrice + toppingPrice) * orderCount
         Button(
-            onClick = {}
+            onClick = {
+                onAddToCart(orderCount)
+            }
         ) {
             Text("Tambah ke keranjang - $totalPrice")
         }
@@ -262,7 +276,6 @@ val dummyTopping = listOf(
     Topping(R.drawable.topping_caramel, "Caramel", 6000),
     Topping(R.drawable.topping_caramel, "Caramel", 6000),
     Topping(R.drawable.topping_caramel, "Caramel", 6000),
-    Topping(R.drawable.topping_caramel, "Caramel", 6000),
 )
 
 @Preview(showBackground = true)
@@ -280,6 +293,6 @@ fun ToppingPreview() {
 @Composable
 fun DefaultPreview2() {
     KedaiKopiTheme {
-        DetailContent(R.drawable.menu1, "title", 30000, onBackClick = {})
+        DetailContent(R.drawable.menu1, "title", 30000, onBackClick = {}, onAddToCart = {})
     }
 }

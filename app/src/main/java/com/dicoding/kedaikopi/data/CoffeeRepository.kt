@@ -7,16 +7,25 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.map
 
-class CoffeeRepository() {
+class CoffeeRepository {
+
+
 
     private val orderCoffeeDrinks = mutableListOf<OrderCoffee>()
 
-    suspend fun getAllOrderCoffeeDrinks(): Flow<List<OrderCoffee>> {
+    init {
         if (orderCoffeeDrinks.isEmpty()) {
             FakeCoffeeDataSource.dummyCoffees.map {
                 orderCoffeeDrinks.add(OrderCoffee(it, 0))
             }
         }
+    }
+    suspend fun getAllOrderCoffeeDrinks(): Flow<List<OrderCoffee>> {
+//        if (orderCoffeeDrinks.isEmpty()) {
+//            FakeCoffeeDataSource.dummyCoffees.map {
+//                orderCoffeeDrinks.add(OrderCoffee(it, 0))
+//            }
+//        }
         return flowOf(orderCoffeeDrinks)
     }
 
@@ -27,7 +36,7 @@ class CoffeeRepository() {
     }
 
     suspend fun getAddedOrderCoffeeDrinks(): Flow<List<OrderCoffee>> {
-        return getAllOrderCoffeeDrinks()
+            return getAllOrderCoffeeDrinks()
             .map { orderCoffeeDrinks ->
                 orderCoffeeDrinks.filter { orderCoffeeDrink ->
                     orderCoffeeDrink.count != DEFAULT_COFFEE_DRINK_COUNT
@@ -35,21 +44,21 @@ class CoffeeRepository() {
             }
     }
 
-    suspend fun add(coffeeDrinkId: Long): Flow<Boolean> {
+    suspend fun add(coffeeDrinkId: Long, count: Int): Flow<Boolean> {
         val index = orderCoffeeDrinks.indexOfFirst { it.coffee.id == coffeeDrinkId }
         val result = if (index != INVALID_INDEX) {
             val orderCoffeeDrink = orderCoffeeDrinks[index]
-            val newCountValue = if (orderCoffeeDrink.count == MAX_COFFEE_DRINK_VALUE)
-                MAX_COFFEE_DRINK_VALUE
-            else
-                orderCoffeeDrink.count + 1
-
+            val newCountValue = count
             orderCoffeeDrinks[index] = orderCoffeeDrink.copy(coffee = orderCoffeeDrink.coffee, count = newCountValue)
             true
         } else {
             false
         }
         return flowOf(result)
+    }
+
+    fun addCoffeeToCart(coffee: Coffee, count: Int) {
+        orderCoffeeDrinks.add(OrderCoffee(coffee, count))
     }
 
     suspend fun remove(coffeeDrinkId: Long): Flow<Boolean> {
@@ -61,7 +70,8 @@ class CoffeeRepository() {
             else
                 orderCoffeeDrink.count - 1
 
-            orderCoffeeDrinks[index] = orderCoffeeDrink.copy(coffee = orderCoffeeDrink.coffee, count = newCountValue)
+            orderCoffeeDrinks[index] =
+                orderCoffeeDrink.copy(coffee = orderCoffeeDrink.coffee, count = newCountValue)
             true
         } else {
             false
@@ -73,10 +83,20 @@ class CoffeeRepository() {
         orderCoffeeDrinks.clear()
     }
 
-    companion object{
+    companion object {
         private const val MIN_COFFEE_DRINK_VALUE = 0
         private const val MAX_COFFEE_DRINK_VALUE = 99
         private const val DEFAULT_COFFEE_DRINK_COUNT = 0
         private const val INVALID_INDEX = -1
+
+        @Volatile
+        private var instance: CoffeeRepository? = null
+
+        fun getInstance(): CoffeeRepository =
+            instance ?: synchronized(this) {
+                CoffeeRepository().apply {
+                    instance = this
+                }
+            }
     }
 }

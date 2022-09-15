@@ -29,6 +29,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.dicoding.kedaikopi.ui.screen.cart.CartScreen
 import com.dicoding.kedaikopi.ui.screen.detail.DetailScreen
 import com.dicoding.kedaikopi.ui.screen.home.HomeScreen
 import com.dicoding.kedaikopi.ui.theme.KedaiKopiTheme
@@ -96,12 +97,23 @@ fun MyApp() {
                     arguments = listOf(navArgument("coffeeId") { type = NavType.LongType }),
                 ) {
                     val id = it.arguments?.getLong("coffeeId") ?: -1L
-                    DetailScreen(id) {
-                        navController.navigateUp()
-                    }
+                    DetailScreen(id,
+                        onBackClick = {
+                            navController.navigateUp()
+                        },
+                        navigateToCart = {
+                            navController.navigate(Screen.Profile.route){
+                                popUpTo(navController.graph.findStartDestination().id) {
+                                    saveState = true
+                                    inclusive = true
+                                }
+                                launchSingleTop = true
+                                restoreState = true
+                            }
+                        })
                 }
                 composable(Screen.Profile.route) {
-                    ProfileScreen()
+                    CartScreen(navigateToSuccess = {})
                 }
             }
 

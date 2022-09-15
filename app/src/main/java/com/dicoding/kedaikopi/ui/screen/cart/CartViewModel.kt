@@ -1,32 +1,28 @@
-package com.dicoding.kedaikopi.ui.screen.detail
+package com.dicoding.kedaikopi.ui.screen.cart
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.dicoding.kedaikopi.data.CoffeeRepository
-import com.dicoding.kedaikopi.model.Coffee
 import com.dicoding.kedaikopi.ui.common.UiState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.launch
 
-class DetailFavoriteViewModel(
+class CartViewModel(
     private val repository: CoffeeRepository
 ) : ViewModel() {
-    private val _uiState: MutableStateFlow<UiState<Coffee>> =
-        MutableStateFlow(UiState.Loading)
-    val uiState: StateFlow<UiState<Coffee>>
+    private val _uiState: MutableStateFlow<UiState<CartState>> = MutableStateFlow(UiState.Loading)
+    val uiState: StateFlow<UiState<CartState>>
         get() = _uiState
 
-    fun getCoffeeById(coffeeId: Long) {
+    fun loadCoffeeDrinks() {
         viewModelScope.launch {
             _uiState.value = UiState.Loading
-            _uiState.value = UiState.Success(repository.getCoffeeById(coffeeId))
-        }
-    }
-
-    fun addToCart(coffee: Coffee, count: Int) {
-        viewModelScope.launch {
-            repository.add(coffee.id, count)
+            repository.getAddedOrderCoffeeDrinks()
+                .collect { orderCoffeeDrinks ->
+                    val totalPrice = orderCoffeeDrinks.sumOf { it.coffee.price * it.count }
+                    _uiState.value = UiState.Success(CartState(orderCoffeeDrinks, totalPrice))
+                }
         }
     }
 

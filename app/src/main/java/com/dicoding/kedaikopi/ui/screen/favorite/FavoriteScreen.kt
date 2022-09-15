@@ -11,7 +11,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.dicoding.kedaikopi.data.CoffeeRepository
+import com.dicoding.kedaikopi.di.Injection
 import com.dicoding.kedaikopi.model.OrderCoffee
 import com.dicoding.kedaikopi.ui.ViewModelFactory
 import com.dicoding.kedaikopi.ui.common.UiState
@@ -21,7 +21,9 @@ import com.dicoding.kedaikopi.ui.screen.favorite.FavoriteViewModel
 @Composable
 fun FavoriteScreen(
     navigateToDetail: (Long) -> Unit,
-    viewModel: FavoriteViewModel = viewModel(factory = ViewModelFactory(CoffeeRepository()))
+    viewModel: FavoriteViewModel = viewModel(
+        factory = ViewModelFactory(Injection.provideRepository())
+    )
 ) {
     viewModel.uiState.collectAsState(initial = UiState.Loading).value.let { uiState ->
         when (uiState) {
