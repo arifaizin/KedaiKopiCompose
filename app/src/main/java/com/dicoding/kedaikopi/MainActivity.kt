@@ -65,10 +65,16 @@ fun DefaultPreview() {
 fun MyApp() {
 
     val navController = rememberNavController()
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentDestination = navBackStackEntry?.destination?.route
 
     KedaiKopiTheme {
         Scaffold(
-            bottomBar = { BottomNavigation(navController) }
+            bottomBar = {
+                if (currentDestination != Screen.DetailFavorite.route) {
+                    BottomNavigation(navController)
+                }
+            }
         ) { innerPadding ->
             NavHost(
                 navController = navController,
@@ -90,7 +96,7 @@ fun MyApp() {
                     arguments = listOf(navArgument("coffeeId") { type = NavType.LongType }),
                 ) {
                     val id = it.arguments?.getLong("coffeeId") ?: -1L
-                    DetailScreen(id){
+                    DetailScreen(id) {
                         navController.navigateUp()
                     }
                 }
