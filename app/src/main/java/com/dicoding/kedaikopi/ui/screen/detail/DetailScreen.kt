@@ -1,5 +1,6 @@
 package com.dicoding.kedaikopi.ui.screen.detail
 
+import OrderButton
 import androidx.annotation.DrawableRes
 import androidx.compose.foundation.*
 import androidx.compose.foundation.layout.*
@@ -88,7 +89,7 @@ fun DetailContent(
         var selectedItem by remember { mutableStateOf(iceOptions[0]) }
 
         Column(
-            modifier = Modifier.padding(16.dp)
+            modifier = Modifier.padding(16.dp).weight(1f)
         ) {
             Text(
                 text = "Ice Level",
@@ -122,20 +123,26 @@ fun DetailContent(
 //            }
 //        }
 
-        ProductCounter(
-            1,
-            orderCount,
-            onProductIncreased = { orderCount++ },
-            onProductDecreased = { if (orderCount > 1) orderCount-- }
-        )
+        Spacer(modifier = Modifier.fillMaxWidth().height(6.dp).background(LightGray))
 
-        totalPrice = (basePrice + optionPrice + toppingPrice) * orderCount
-        Button(
-            onClick = {
-                onAddToCart(orderCount)
-            }
+        Column(
+            modifier = Modifier.padding(16.dp)
         ) {
-            Text("Tambah ke keranjang - $totalPrice")
+            ProductCounter(
+                1,
+                orderCount,
+                onProductIncreased = { orderCount++ },
+                onProductDecreased = { if (orderCount > 1) orderCount-- },
+                modifier = Modifier.align(Alignment.CenterHorizontally).padding(bottom = 8.dp)
+            )
+
+            totalPrice = (basePrice + optionPrice + toppingPrice) * orderCount
+            OrderButton(
+                text = "Tambah ke Keranjang : $totalPrice",
+                onClick = {
+                    onAddToCart(orderCount)
+                }
+            )
         }
     }
 }

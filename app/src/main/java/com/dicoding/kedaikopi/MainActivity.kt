@@ -9,9 +9,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Favorite
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -51,7 +51,7 @@ sealed class Screen(val route: String) {
         fun createRoute(coffeeId: Long) = "favorite/$coffeeId"
     }
 
-    object Profile : Screen("profile")
+    object Cart : Screen("cart")
 }
 
 @Preview(showBackground = true, device = Devices.PIXEL_2)
@@ -102,7 +102,7 @@ fun MyApp() {
                             navController.navigateUp()
                         },
                         navigateToCart = {
-                            navController.navigate(Screen.Profile.route){
+                            navController.navigate(Screen.Cart.route){
                                 popUpTo(navController.graph.findStartDestination().id) {
                                     saveState = true
                                     inclusive = true
@@ -112,7 +112,7 @@ fun MyApp() {
                             }
                         })
                 }
-                composable(Screen.Profile.route) {
+                composable(Screen.Cart.route) {
                     CartScreen(navigateToSuccess = {})
                 }
             }
@@ -151,14 +151,14 @@ private fun BottomNavigation(
                 screen = Screen.Home
             ),
             BottomBarItem(
-                title = stringResource(R.string.menu_cart),
+                title = stringResource(R.string.menu_favorite),
                 icon = Icons.Default.Favorite,
                 screen = Screen.Favorite
             ),
             BottomBarItem(
-                title = stringResource(R.string.menu_profile),
-                icon = Icons.Default.AccountCircle,
-                screen = Screen.Profile
+                title = stringResource(R.string.menu_cart),
+                icon = Icons.Default.ShoppingCart,
+                screen = Screen.Cart
             ),
         )
         val navBackStackEntry by navController.currentBackStackEntryAsState()

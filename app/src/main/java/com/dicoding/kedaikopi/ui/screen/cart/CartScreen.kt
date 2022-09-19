@@ -1,16 +1,23 @@
 package com.dicoding.kedaikopi.ui.screen.cart
 
+import OrderButton
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material.Button
+import androidx.compose.foundation.shape.AbsoluteRoundedCornerShape
 import androidx.compose.material.Divider
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -35,7 +42,7 @@ fun CartScreen(
                 viewModel.loadCoffeeDrinks()
             }
             is UiState.Success -> {
-                BasketSuccessScreen(
+                CartSuccessScreen(
                     uiState.data,
                     navigateToSuccess,
                     addCoffeeDrink = {  },
@@ -48,7 +55,7 @@ fun CartScreen(
 }
 
 @Composable
-fun BasketSuccessScreen(
+fun CartSuccessScreen(
     state: CartState,
     navigateToSuccess: () -> Unit,
     addCoffeeDrink: (Long) -> Unit,
@@ -57,91 +64,25 @@ fun BasketSuccessScreen(
     Column(
         modifier = Modifier.fillMaxSize()
     ) {
-        TopAppBar {
+        TopAppBar(backgroundColor = Color.White) {
             Text(
-                text = "Basket",
-                modifier = Modifier.padding(horizontal = 12.dp),
-                fontSize = 18.sp
+                text = "Keranjang",
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp),
+                fontWeight = FontWeight.Bold,
+                fontSize = 18.sp,
+                textAlign = TextAlign.Center
             )
         }
-        PaymentInfo(
-            deliveryCosts = 5,
-            total = state.totalPrice,
-            currency = '€',
-            isPayButtonEnabled = state.orderCoffeeDrinks.isNotEmpty(),
-            onPayed = navigateToSuccess
+        OrderButton(
+            text = "Total Pesanan : ${state.totalPrice}",
+            enabled = state.orderCoffeeDrinks.isNotEmpty(),
+            onClick = navigateToSuccess,
+            modifier = Modifier.padding(16.dp)
         )
-        Spacer(modifier = Modifier.height(8.dp))
         CoffeeDrinkList(
             orderCoffeeDrinks = state.orderCoffeeDrinks,
             onCoffeeDrinkCountIncreased = removeCoffeeDrink,
-            onCoffeeDrinkCountDecreased = addCoffeeDrink
-        )
-    }
-}
-
-@Composable
-private fun PaymentInfo(
-    deliveryCosts: Int,
-    total: Int,
-    currency: Char,
-    isPayButtonEnabled: Boolean,
-    onPayed: () -> Unit
-) {
-    Column(
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        PaymentInfoItem(name = "Delivery Costs:", value = deliveryCosts, currency = currency)
-        PaymentInfoItem(name = "Total:", value = total, currency = currency)
-        PayButton(isButtonEnabled = isPayButtonEnabled, onPayed = onPayed)
-    }
-}
-
-@Composable
-private fun PaymentInfoItem(
-    name: String,
-    value: Int,
-    currency: Char
-) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp)
-    ) {
-        Text(
-            text = name,
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(4f),
-            fontSize = 16.sp
-        )
-
-        Text(
-            text = "$currency $value",
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(2f),
-            textAlign = TextAlign.End,
-            fontSize = 16.sp
-        )
-    }
-}
-
-@Composable
-private fun PayButton(
-    isButtonEnabled: Boolean,
-    onPayed: () -> Unit
-) {
-    Button(
-        enabled = isButtonEnabled,
-        onClick = { onPayed() },
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(16.dp)
-    ) {
-        Text(
-            text = "Pay",
-            fontSize = 24.sp
+            onCoffeeDrinkCountDecreased = addCoffeeDrink,
         )
     }
 }
@@ -150,9 +91,14 @@ private fun PayButton(
 private fun CoffeeDrinkList(
     orderCoffeeDrinks: List<OrderCoffee>,
     onCoffeeDrinkCountIncreased: (Long) -> Unit,
-    onCoffeeDrinkCountDecreased: (Long) -> Unit
+    onCoffeeDrinkCountDecreased: (Long) -> Unit,
+    modifier: Modifier = Modifier
 ) {
-    LazyColumn {
+    LazyColumn(
+        contentPadding = PaddingValues(16.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp),
+        modifier = modifier
+    ) {
         orderCoffeeDrinks.forEach { item ->
             item {
                 CoffeeDrinkItem(
@@ -175,6 +121,14 @@ private fun CoffeeDrinkItem(
     Row(
         modifier = Modifier.fillMaxWidth()
     ) {
+        Image(
+            painter = painterResource(orderCoffeeDrink.coffee.image),
+            contentDescription = null,
+            contentScale = ContentScale.Crop,
+            modifier = Modifier
+                .size(90.dp)
+                .clip(AbsoluteRoundedCornerShape(8.dp))
+        )
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -183,17 +137,13 @@ private fun CoffeeDrinkItem(
         ) {
             Text(
                 text = orderCoffeeDrink.coffee.title,
-                fontSize = 18.sp,
-                modifier = Modifier.fillMaxWidth()
+                style = MaterialTheme.typography.subtitle1.copy(
+                    fontWeight = FontWeight.ExtraBold
+                )
             )
             Text(
-                text = orderCoffeeDrink.coffee.price.toString(),
-                fontSize = 14.sp,
-                maxLines = 3,
-                overflow = TextOverflow.Ellipsis,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 4.dp)
+                text = (orderCoffeeDrink.coffee.price * orderCoffeeDrink.count).toString(),
+                style = MaterialTheme.typography.subtitle2
             )
         }
         Box(
