@@ -29,6 +29,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import androidx.navigation.navDeepLink
 import com.dicoding.kedaikopi.ui.screen.cart.CartScreen
 import com.dicoding.kedaikopi.ui.screen.detail.DetailScreen
 import com.dicoding.kedaikopi.ui.screen.home.HomeScreen
@@ -50,7 +51,6 @@ sealed class Screen(val route: String) {
     object DetailFavorite : Screen("favorite/{coffeeId}") {
         fun createRoute(coffeeId: Long) = "favorite/$coffeeId"
     }
-
     object Cart : Screen("cart")
 }
 
@@ -77,6 +77,8 @@ fun MyApp() {
                 }
             }
         ) { innerPadding ->
+            val uri = "https://www.dicoding.com"
+
             NavHost(
                 navController = navController,
                 startDestination = Screen.Home.route,
@@ -95,6 +97,7 @@ fun MyApp() {
                 composable(
                     route = Screen.DetailFavorite.route,
                     arguments = listOf(navArgument("coffeeId") { type = NavType.LongType }),
+                    deepLinks = listOf(navDeepLink { uriPattern = "$uri/detail/{coffeeId}" })
                 ) {
                     val id = it.arguments?.getLong("coffeeId") ?: -1L
                     DetailScreen(id,
