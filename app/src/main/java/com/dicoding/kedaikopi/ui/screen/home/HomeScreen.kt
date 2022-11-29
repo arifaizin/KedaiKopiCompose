@@ -11,6 +11,8 @@ import androidx.compose.foundation.lazy.LazyVerticalGrid
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.AbsoluteRoundedCornerShape
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Search
@@ -20,18 +22,19 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.dicoding.kedaikopi.R
+import com.dicoding.kedaikopi.component1.Component1
 import com.dicoding.kedaikopi.model.FakeCoffeeDataSource
-import com.dicoding.kedaikopi.ui.component.MenuItem
 
 data class Category(
     @DrawableRes val imageCategory: Int,
@@ -51,12 +54,13 @@ private val dummyCategory = listOf(
 
 @Composable
 fun HomeScreen(
-    modifier: Modifier = Modifier
-){
+    modifier: Modifier = Modifier,
+    onSearchEnter: (String) -> Unit = {},
+) {
     Column(
         modifier = modifier
     ) {
-        Banner()
+        Banner(onSearchEnter = onSearchEnter)
         HomeSection(title = R.string.coffe_category) {
             CategoryRow()
         }
@@ -69,6 +73,7 @@ fun HomeScreen(
 @Composable
 fun Banner(
     modifier: Modifier = Modifier,
+    onSearchEnter: (String) -> Unit = {},
 ) {
     Column {
         Box {
@@ -78,7 +83,7 @@ fun Banner(
                 contentScale = ContentScale.Crop,
                 modifier = modifier.height(160.dp)
             )
-            SearchBar()
+            SearchBar(onSearchEnter = onSearchEnter)
         }
 
     }
@@ -87,18 +92,25 @@ fun Banner(
 @Composable
 fun SearchBar(
     modifier: Modifier = Modifier,
+    textFieldValue: String = "",
+    onSearchEnter: (String) -> Unit = {},
+    onValueChange: (String) -> Unit = {}
 ) {
-    val textState = remember { mutableStateOf(TextFieldValue()) }
+    val textState = remember { mutableStateOf(textFieldValue) }
 
     TextField(
         value = textState.value,
-        onValueChange = { textState.value = it },
+        onValueChange = {
+            textState.value = it
+            onValueChange(it)
+        },
         leadingIcon = {
             Icon(
                 imageVector = Icons.Default.Search,
                 contentDescription = null
             )
         },
+        singleLine = true,
         colors = TextFieldDefaults.textFieldColors(
             backgroundColor = MaterialTheme.colors.surface,
             disabledIndicatorColor = Color.Transparent,
@@ -108,10 +120,15 @@ fun SearchBar(
         placeholder = {
             Text(stringResource(R.string.placeholder_search))
         },
+        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+        keyboardActions = KeyboardActions(
+            onDone = { onSearchEnter(textState.value) }
+        ),
         modifier = modifier
             .padding(16.dp)
             .fillMaxWidth()
             .heightIn(min = 48.dp)
+            .shadow(2.dp, AbsoluteRoundedCornerShape(16.dp))
             .clip(AbsoluteRoundedCornerShape(16.dp))
     )
 }
@@ -135,7 +152,7 @@ fun CategoryRow(
 fun CategoryItem(
     category: Category,
     modifier: Modifier = Modifier,
-    ) {
+) {
     Column(
         modifier = modifier
     ) {
@@ -178,12 +195,13 @@ fun MenuGrid(
         modifier = modifier
     ) {
         items(FakeCoffeeDataSource.dummyCoffees) { menu ->
-            MenuItem(
-                image = menu.image,
-                title = menu.title,
-                price = menu.price,
-                modifier = Modifier.fillMaxWidth()
-            )
+            Component1()
+//            MenuItem(
+//                image = menu.image,
+//                title = menu.title,
+//                price = menu.price,
+//                modifier = Modifier.fillMaxWidth()
+//            )
         }
     }
 }
