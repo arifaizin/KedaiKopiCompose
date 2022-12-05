@@ -1,5 +1,7 @@
 package com.dicoding.kedaikopi.ui.screen.favorite
 
+import androidx.compose.runtime.State
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.dicoding.kedaikopi.data.CoffeeRepository
@@ -16,6 +18,9 @@ class FavoriteViewModel(
     val uiState: StateFlow<UiState<List<OrderCoffee>>>
         get() = _uiState
 
+    private val _query = mutableStateOf("")
+    val query: State<String> get() = _query
+
     fun loadCoffeeDrinks() {
         viewModelScope.launch {
             _uiState.value = UiState.Loading
@@ -25,6 +30,12 @@ class FavoriteViewModel(
                 }
         }
     }
+
+    fun search(newQuery: String) {
+        _query.value = newQuery
+        _uiState.value = UiState.Success(repository.searchCoffee(_query.value))
+    }
+
     fun clear() {
         viewModelScope.launch {
             repository.clear()

@@ -57,6 +57,12 @@ class CoffeeRepository {
         return flowOf(result)
     }
 
+    fun searchCoffee(query: String): List<OrderCoffee>{
+        return orderCoffeeDrinks.filter {
+            it.coffee.title.contains(query, ignoreCase = true)
+        }
+    }
+
     fun addCoffeeToCart(coffee: Coffee, count: Int) {
         orderCoffeeDrinks.add(OrderCoffee(coffee, count))
     }

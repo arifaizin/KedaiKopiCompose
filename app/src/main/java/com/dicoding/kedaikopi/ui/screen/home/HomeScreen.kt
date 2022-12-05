@@ -33,7 +33,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.dicoding.kedaikopi.R
-import com.dicoding.kedaikopi.component1.Component1
+import com.dicoding.kedaikopi.menucard.MenuCard
 import com.dicoding.kedaikopi.model.FakeCoffeeDataSource
 
 data class Category(
@@ -188,20 +188,19 @@ fun MenuGrid(
     modifier: Modifier = Modifier
 ) {
     LazyVerticalGrid(
-        cells = GridCells.Adaptive(160.dp),
+        cells = GridCells.Fixed(2),
         contentPadding = PaddingValues(horizontal = 16.dp),
         horizontalArrangement = Arrangement.spacedBy(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
         modifier = modifier
     ) {
         items(FakeCoffeeDataSource.dummyCoffees) { menu ->
-            Component1()
-//            MenuItem(
-//                image = menu.image,
-//                title = menu.title,
-//                price = menu.price,
-//                modifier = Modifier.fillMaxWidth()
-//            )
+            MenuCard(
+                image = painterResource(menu.image),
+                title = menu.title,
+                price = "Rp. ${menu.price}",
+                modifier = Modifier.fillMaxWidth()
+            )
         }
     }
 }

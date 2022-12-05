@@ -9,8 +9,9 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.AccountCircle
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -33,8 +34,9 @@ import androidx.navigation.navDeepLink
 import com.dicoding.kedaikopi.ui.screen.cart.CartScreen
 import com.dicoding.kedaikopi.ui.screen.detail.DetailScreen
 import com.dicoding.kedaikopi.ui.screen.home.HomeScreen
+import com.dicoding.kedaikopi.ui.theme.CoffeeBrown
+import com.dicoding.kedaikopi.ui.theme.DarkGray
 import com.dicoding.kedaikopi.ui.theme.KedaiKopiTheme
-import com.dicoding.kedaikopi.ui.theme.LightGray
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -47,11 +49,15 @@ class MainActivity : ComponentActivity() {
 
 sealed class Screen(val route: String) {
     object Home : Screen("home")
-    object Favorite : Screen("favorite")
+    object Favorite : Screen("favorite?searchText={searchText}"){
+        fun createSearchRoute(searchText: String) = "favorite?searchText=$searchText"
+    }
     object DetailFavorite : Screen("favorite/{coffeeId}") {
         fun createRoute(coffeeId: Long) = "favorite/$coffeeId"
     }
+
     object Cart : Screen("cart")
+    object Profile : Screen("profile")
 }
 
 @Preview(showBackground = true, device = Devices.PIXEL_2)
@@ -85,13 +91,25 @@ fun MyApp() {
                 modifier = Modifier.padding(innerPadding)
             ) {
                 composable(Screen.Home.route) {
-                    HomeScreen()
+                    HomeScreen(
+                        onSearchEnter = {
+                            navController.navigate(Screen.Favorite.createSearchRoute(it))
+                        }
+                    )
                 }
-                composable(Screen.Favorite.route) {
+                composable(
+                    route = Screen.Favorite.route,
+                    arguments = listOf(navArgument("searchText") {
+                        type = NavType.StringType
+                        nullable = true
+                    }),
+                ) {
+                    val searchText = it.arguments?.getString("searchText") ?: ""
                     FavoriteScreen(
+                        searchText = searchText,
                         navigateToDetail = {
                             navController.navigate(Screen.DetailFavorite.createRoute(it))
-                        }
+                        },
                     )
                 }
                 composable(
@@ -105,7 +123,7 @@ fun MyApp() {
                             navController.navigateUp()
                         },
                         navigateToCart = {
-                            navController.navigate(Screen.Cart.route){
+                            navController.navigate(Screen.Cart.route) {
                                 popUpTo(navController.graph.findStartDestination().id) {
                                     saveState = true
                                     inclusive = true
@@ -117,6 +135,9 @@ fun MyApp() {
                 }
                 composable(Screen.Cart.route) {
                     CartScreen(navigateToSuccess = {})
+                }
+                composable(Screen.Profile.route) {
+                    ProfileScreen()
                 }
             }
 
@@ -154,8 +175,8 @@ private fun BottomNavigation(
                 screen = Screen.Home
             ),
             BottomBarItem(
-                title = stringResource(R.string.menu_favorite),
-                icon = Icons.Default.Favorite,
+                title = stringResource(R.string.menu_list),
+                icon = Icons.Default.List,
                 screen = Screen.Favorite
             ),
             BottomBarItem(
@@ -163,12 +184,17 @@ private fun BottomNavigation(
                 icon = Icons.Default.ShoppingCart,
                 screen = Screen.Cart
             ),
+            BottomBarItem(
+                title = stringResource(R.string.menu_profile),
+                icon = Icons.Default.AccountCircle,
+                screen = Screen.Profile
+            ),
         )
         val navBackStackEntry by navController.currentBackStackEntryAsState()
         val currentDestination = navBackStackEntry?.destination
         BottomNavigation(
             backgroundColor = MaterialTheme.colors.background,
-            contentColor = MaterialTheme.colors.primary,
+            contentColor = CoffeeBrown,
             modifier = modifier
         ) {
             items.map { item ->
@@ -183,7 +209,7 @@ private fun BottomNavigation(
                         Text(item.title)
                     },
                     selected = currentDestination?.hierarchy?.any { it.route == item.screen.route } == true,
-                    unselectedContentColor = LightGray,
+                    unselectedContentColor = DarkGray,
                     onClick = {
                         navController.navigate(item.screen.route) {
                             popUpTo(navController.graph.findStartDestination().id) {
